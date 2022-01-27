@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+
+/* strcmp, case insensitive	*/
+static int rikslib_strcmp_nc(const char *a, const char *b) {
+  int ac, bc;
+  for (;;) {
+    ac = toupper(*a++);
+    bc = toupper(*b++);
+    if (ac != bc) return ac - bc;
+    if (ac == '\0') return 0;
+  };
+  return 0;
+}
+
+
+static char *rikslib_strdup(const char *a) {
+  char *b;
+  int len;
+  len = strlen(a) + 1;
+  if ((b = (char *) malloc(len)) == NULL) return NULL;
+  memcpy(b, a, len);
+  return b;
+}
+
+
+static void usage(void) {
+  printf("size [-format <format>] <file>\n");
+}
+
+
+int main(int argc, char *argv[]) {
+  char *format = "%d";
+  FILE *f;
+  long int size;
+  int i;
+
+  for (i = 0; i < argc; i++) {
+    if (rikslib_strcmp_nc(argv[i], "-help") == 0) {
+      usage();
+      return EXIT_SUCCESS;
+
+    } else if (rikslib_strcmp_nc(argv[i], "-format") == 0) {
+      format = rikslib_strdup(argv[++i]);
+    }
+  }
+
+  if (argc < 2) {
+    usage();
+    return EXIT_FAILURE;
+  }
+
+  if ((f = fopen(argv[argc - 1], "rb")) == NULL) {
+    return EXIT_FAILURE;
+  }
+
+  fseek(f, 0, SEEK_END);
+  size = ftell(f);
+  fclose(f);
+
+  printf(format, size);
+  return EXIT_SUCCESS;
+}
